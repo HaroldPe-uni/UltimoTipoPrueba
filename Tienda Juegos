@@ -1,0 +1,161 @@
+import json
+import os
+import datetime
+ 
+Ruta = 'Archivo.json'
+Venta = []
+ 
+Juegos = {
+    "nintendo": {
+        "1": {"Princess Peach": {"Aventura": 27990}},
+        "2": {"Mario vs. Donkey Kong": {"Aventura": 31990}},
+        "3": {"Hogwarts Legacy": {"Aventura": 28990}}
+    },
+    "ps5": {
+        "4": {"METAL SLUG ATTACK RELOADED": {"Accion": 9990}},
+        "5": {"Crown Wars": {"Accion": 36990}},
+        "6": {"EA SPORTS FC 24 FIFA 24": {"Deporte": 26990}},
+        "7": {"TopSpin 2K25": {"Deporte": 22990}},
+        "8": {"Rugby 22": {"Deporte": 27990}}
+    },
+    "ps4": {
+        "9": {"Call of Duty Black Black Ops 6": {"Disparos": 42990}},
+        "10": {"Red Dead Redemption + Undead Nightmare": {"Disparos": 32990}}
+    }
+}
+
+def RegistrarVenta():
+    try:
+        NombreCliente = input("Ingrese su nombre: ").capitalize()
+        ConsolaCliente = input("¿De qué consola busca un juego?\nPS5\nPS4\nNintendo\nEscriba su elección: ").lower()
+        
+        # Convert console name to the key used in the dictionary
+        if ConsolaCliente == "ps5":
+            consola_key = "ps5"
+        elif ConsolaCliente == "ps4":
+            consola_key = "ps4"
+        elif ConsolaCliente == "nintendo":
+            consola_key = "nintendo"
+        else:
+            print("Consola no reconocida.")
+        
+        print("")
+        JuegoCliente = input("Elija un juego\n1. Princess Peach: Showtime!\n2. Mario vs. Donkey Kong\n3. Hogwarts Legacy\n4. METAL SLUG ATTACK RELOADED\n5. Crown Wars\n6. EA SPORTS FC 24 FIFA 24\n7. TopSpin 2K25\n8. Rugby 22\n9. Call of Duty Black Black Ops 6\n10. Red Dead Redemption + Undead Nightmare\nElija el número que desea: ")
+        
+        HoraPedido = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        if JuegoCliente in Juegos[consola_key]:
+            juego_info = Juegos[consola_key][JuegoCliente]
+            juego_nombre = list(juego_info)[0]
+           #print("derecha", juego_nombre)
+            juego_precio = juego_info[juego_nombre]["Aventura"] if "Aventura" in juego_info[juego_nombre] else juego_info[juego_nombre]["Accion"] if "Accion" in juego_info[juego_nombre] else juego_info[juego_nombre]["Deporte"] if "Deporte" in juego_info[juego_nombre] else juego_info[juego_nombre]["Disparos"]
+            print("")
+            SocioCLiente = input("¿Que menbrecia posee?\nEstudiante\nTrabajador\nSocio\nEscriba su caso: ").capitalize()
+            if (SocioCLiente == "Estudiante"):
+                descuento = juego_precio * 0.15
+                PrecioFinal= juego_precio - descuento
+            elif (SocioCLiente == "Trabajador"):
+                descuento = juego_precio * 0.10
+                PrecioFinal= juego_precio - descuento
+            elif (SocioCLiente == "Socio"):
+                descuento = juego_precio * 0.20
+                PrecioFinal= juego_precio - descuento
+            else:
+                print("Membrecia no encontrada")
+
+            DatosVenta = {
+                "Nombre Cliente" : NombreCliente,
+                "Consola" : ConsolaCliente.capitalize(),
+                "Juego" : juego_nombre,
+                "Menbrecia" : SocioCLiente,
+                "PrecioJuego" : PrecioFinal,
+                "Hora" : HoraPedido
+                #print(f"Cliente: {NombreCliente}")
+                #print(f"Consola: {ConsolaCliente.capitalize()}")
+                #print(f"Juego: {juego_nombre}")
+                #print(f"Precio: {juego_precio}")
+                #print(f"Hora del pedido: {HoraPedido}")
+            }
+            Venta.append(DatosVenta)
+            print("Venta Guardada")
+        else:
+            print("Juego no encontrado para la consola seleccionada.")
+    except:
+        print(f"Fallo el procedimiento {RegistrarVenta}")
+        pass
+
+def VentasCliente(NombreCliente):
+    ventas_cliente = [venta for venta in Venta if venta["Nombre Cliente"] == NombreCliente.capitalize()]
+
+    if ventas_cliente:
+        print(f"Las ventas del cliente {NombreCliente} son las siguientes:\n")
+        for venta in ventas_cliente:
+            print(f"Consola: {venta['Consola']}\n Juego: {venta['Juego']}\n Menbrecia: {venta['Menbrecia']}\n Costo: {venta['PrecioJuego']}\n Hora: {venta['Hora']}")
+    else:
+        print("No se encontró el cliente.")
+
+def GuardarArchivo():
+    with open(Ruta, 'w') as Archivo:
+        json.dump(Venta, Archivo)
+        print("Se guardo felicidades")
+
+def CargarDatos():
+    global Venta
+    if os.path.exists(Ruta):
+        with open(Ruta, 'r') as archivo:
+            Venta = json.load(archivo)
+        print(f"Las ventas han sido cargadas desde {Ruta}.")
+    else:
+        print(f"No se encontró el archivo {Ruta}.")
+
+
+def factura():
+    if not Venta:
+        print("No se ha realizado ninguna venta.")
+        return
+
+    NombreCliente = input("Ingrese el nombre del cliente: ").capitalize()
+    ventas_cliente = [venta for venta in Venta if venta["Nombre Cliente"] == NombreCliente.capitalize()]
+
+    if ventas_cliente:
+        print(f"Generando boleta para {NombreCliente}:\n")
+        for venta in ventas_cliente:
+            print(f"Consola: {venta['Consola']}\n Juego: {venta['Juego']}\n Menbrecia: {venta['Menbrecia']}\n Costo: {venta['PrecioJuego']}\n Hora: {venta['Hora']}")
+        total = sum(venta['PrecioJuego'] for venta in ventas_cliente)
+        print(f"\nTotal a pagar: {total} pesos.")
+    else:
+        print("No se encontró el cliente.")
+
+
+while True:
+    try:
+        print("------------------------------------------------------------")
+        print("Bienvenido al sistema de ventas de juegos de consola DUOC UC")
+        print("1.   Registrar una venta.")
+        print("2.   Mostrar todas las ventas.")
+        print("3.   Buscar ventas por cliente.")
+        print("4.   Guardar las ventas en un archivo.")
+        print("5.   Cargar las ventas desde un archivo.")
+        print("6.   Generar factura.")
+        print("7.   Salir del programa.")
+        opcion = int(input("Seleccione una opcion: "))
+        print("------------------------------------------------------------")
+        
+        if (opcion == 1):
+            RegistrarVenta()
+        elif (opcion == 2):
+            print(f"Las ventas son las siguentes {Venta}")
+        elif (opcion == 3):
+            NombreCliente = input("Ingrese el nombre del cliente: ").capitalize()
+            VentasCliente(NombreCliente)
+        elif (opcion == 4):
+            GuardarArchivo()
+        elif (opcion == 5):
+            CargarDatos()
+        elif (opcion == 6):
+            factura()
+        elif (opcion == 7):
+            print("Saliste.")
+            break
+    except:
+        print("Error")
